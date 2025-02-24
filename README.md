@@ -1,82 +1,41 @@
-# TON project template (RFC)
+# TON Counter Smart Contract
 
-Starter template for a new TON project - FunC contracts, unit tests, compilation and deployment scripts.
+This is a simple TON smart contract designed to manage and increase a counter. The contract supports a basic "increase" operation and provides methods for querying the current counter value and the context ID.
 
-> This repo is a work in progress and is subject to change
+## Features
 
-## Layout
+- **Counter Management**: The contract allows the counter value to be increased by a specified amount.
+- **Context ID**: Each contract instance has a unique `ctx_id` that helps to differentiate it from others.
+- **Get Methods**: External queries can retrieve the current value of the counter and the context ID.
+- **Error Handling**: The contract bounces invalid messages back to the sender, providing clear error feedback.
 
--   `contracts` - contains the source code of all the smart contracts of the project and their dependencies.
--   `wrappers` - contains the wrapper classes (implementing `Contract` from ton-core) for the contracts, including any [de]serialization primitives and compilation functions.
--   `tests` - tests for the contracts. Would typically use the wrappers.
--   `scripts` - contains scripts used by the project, mainly the deployment scripts.   
+## Contract Functions
 
-We ask the community to provide any comments on this layout, the wanted/required changes, or even suggestions for entirely different project structures and/or tool concepts.
+- **`load_data()`**: Loads the contract's internal state, including `ctx_id` and `ctx_counter`, from storage.
+- **`save_data()`**: Saves the current state (`ctx_id` and `ctx_counter`) back to persistent storage.
+- **`recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body)`**: Handles incoming messages. It processes the "increase" operation and handles invalid operations with errors.
+- **`get_counter()`**: A getter method that returns the current value of the counter.
+- **`get_id()`**: A getter method that returns the context ID of the contract.
 
-PRs are welcome!
+## Operations
 
-## Repo contents / tech stack
-1. Compiling FunC - [https://github.com/ton-community/func-js](https://github.com/ton-community/func-js)
-2. Testing TON smart contracts - [https://github.com/ton-community/sandbox/](https://github.com/ton-community/sandbox/)
-3. Deployment of contracts is supported with [TON Connect 2](https://github.com/ton-connect/), [Tonhub wallet](https://tonhub.com/) or via a direct `ton://` deeplink
+### `op::increase`
 
-## How to use
-* Clone this repo
-* Run `yarn install`
+The contract supports one operation: `op::increase`, which increments the counter by a specified value. The message format for this operation is as follows:
 
-### Building a contract
-1. Interactively
-   1. Run `yarn blueprint build`
-   2. Choose the contract you'd like to build
-1. Non-interactively
-   1. Run `yarn blueprint build <CONTRACT>`
-   2. example: `yarn blueprint build pingpong`
+- **op (32 bits)**: The operation code (in this case, `op::increase`).
+- **increase_by (32 bits)**: The amount by which the counter should be increased.
 
-### Deploying a contract
-1. Interactively
-   1. Run `yarn blueprint run`
-   2. Choose the contract you'd like to deploy
-   3. Choose whether you're deploying on mainnet or testnet
-   4. Choose how to deploy:
-      1. With a TON Connect compatible wallet
-      2. A `ton://` deep link / QR code
-      3. Tonhub wallet
-   5. Deploy the contract
-2. Non-interactively
-   1. Run `yarn blueprint run <CONTRACT> --<NETWORK> --<DEPLOY_METHOD>`
-   2. example: `yarn blueprint run pingpong --mainnet --tonconnect`
+### Example of Usage
 
-### Testing
-1. Run `yarn test`
+1. **Deploy the Contract**: When deploying the contract, initialize it with a unique `ctx_id` and a starting counter value.
+2. **Send the Increase Operation**:
+   - Send a message with the `op::increase` operation and the desired increment value.
+   - The contract will increase the counter accordingly.
+3. **Query the Counter**:
+   - Use the `get_counter()` method to retrieve the current counter value.
+   - Use the `get_id()` method to retrieve the unique `ctx_id`.
 
-## Adding your own contract
-1. Run `yarn blueprint create <CONTRACT>`
-2. example: `yarn blueprint create MyContract`
+### License
 
-* Write code
-  * FunC contracts are located in `contracts/*.fc`
-    * Standalone root contracts are located in `contracts/*.fc`
-    * Shared imports (when breaking code to multiple files) are in `contracts/imports/*.fc`
-  * Tests in TypeScript are located in `test/*.spec.ts`
-  * Wrapper classes for interacting with the contract are located in `wrappers/*.ts`
-  * Any scripts (including deployers) are located in `scripts/*.ts`
-
-* Build
-  * Builder configs are located in `wrappers/*.compile.ts`
-  * In the root repo dir, run in terminal `yarn blueprint build`
-  * Compilation errors will appear on screen, if applicable
-  * Resulting build artifacts include:
-    * `build/*.compiled.json` - the binary code cell of the compiled contract (for deployment). Saved in a hex format within a json file to support webapp imports
-
-* Test
-  * In the root repo dir, run in terminal `yarn test`
-  * Don't forget to build (or rebuild) before running tests
-  * Tests are running inside Node.js by running TVM in web-assembly using [sandbox](https://github.com/ton-community/sandbox)
-
-* Deploy
-  * Run `yarn blueprint run <deployscript>`
-  * Contracts will be rebuilt on each execution
-  * Follow the on-screen instructions of the deploy script
-  
-# License
-MIT
+This contract is open-source and available under the [MIT License](LICENSE).
